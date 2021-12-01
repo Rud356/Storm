@@ -28,9 +28,9 @@ class ASGIConnectionScope:
             "spec_version", default="2.0"
         )
 
-        assert self.asgi_version in {"2.0", "2.1"}, (
+        assert self.asgi_version in {"2.0", "2.1", "2.2", "2.3"}, (
             "Asgi version doesn't match with supported by server"
-            " (must be 2.0 or 2.1 only)"
+            " (must be 2.0 and up to 2.3 only)"
         )
 
 
