@@ -26,6 +26,10 @@ class ASGIConnectionScope:
             " (must be 3.0 only)"
         )
 
+        assert self.asgi_spec_version in {"2.0", "2.1"}, (
+            "Asgi spec_version must be only 2.1 or 2.0"
+        )
+
     @property
     def asgi_version(self) -> str:
         return self.asgi.get("version", default="2.0")
