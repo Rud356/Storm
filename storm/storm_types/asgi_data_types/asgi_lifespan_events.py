@@ -1,5 +1,6 @@
 from typing import Optional
 
+from storm.loggers import events_logger
 from .base_event import Event
 
 
@@ -31,6 +32,7 @@ class StartupFailed(LifetimeEvent):
 
     def __init__(self, message: Optional[str] = None):
         self.message: str = message or ""
+        events_logger.error(self.message)
 
 
 class Shutdown(LifetimeEvent):
@@ -68,6 +70,8 @@ class ShutdownFailed(LifetimeEvent):
         :return: dictionary with message.
         """
         message = message or None
+        events_logger.error(f"Shutdown failed with message: {message}")
+
         return {
             "type": cls.type,
             "message": message

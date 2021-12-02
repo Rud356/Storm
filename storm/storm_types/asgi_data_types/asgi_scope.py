@@ -2,7 +2,7 @@ from typing import Iterable, Union, Optional
 from dataclasses import dataclass, field
 
 
-@dataclass
+@dataclass(frozen=True)
 class ASGIConnectionScope:
     type: str
     asgi: dict[str, str]
@@ -21,20 +21,21 @@ class ASGIConnectionScope:
     ]
 
     def __post_init__(self):
-        self.asgi_version: str = self.asgi.get(
-            "version", default="2.0"
-        )
-        self.asgi_spec_version: str = self.asgi.get(
-            "spec_version", default="2.0"
-        )
-
         assert self.asgi_version in {"3.0"}, (
             "Asgi version doesn't match with supported by storm"
             " (must be 3.0 only)"
         )
 
+    @property
+    def asgi_version(self) -> str:
+        return self.asgi.get("version", default="2.0")
 
-@dataclass
+    @property
+    def asgi_spec_version(self) -> str:
+        return self.asgi.get("spec_version", default="2.0")
+
+
+@dataclass(frozen=True)
 class HttpASGIConnectionScope(ASGIConnectionScope):
     type: str = field(default="http")
     scheme: str = field(default="http")
@@ -47,7 +48,7 @@ class HttpASGIConnectionScope(ASGIConnectionScope):
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class WebSocketASGIConnectionScope(ASGIConnectionScope):
     type: str = field(default="websocket")
     scheme: str = field(default="ws")
@@ -57,6 +58,6 @@ class WebSocketASGIConnectionScope(ASGIConnectionScope):
     def __post_init__(self):
         super().__post_init__()
         assert self.scheme in {"ws", "wss"}, (
-                "Invalid scheme for WebSocketAsgiConnectionScope "
-                f"(got {self.scheme})"
-            )
+            "Invalid scheme for WebSocketAsgiConnectionScope "
+            f"(got {self.scheme})"
+        )
