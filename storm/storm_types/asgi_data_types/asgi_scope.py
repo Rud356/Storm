@@ -3,9 +3,27 @@ from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
-class ASGIConnectionScope:
+class BaseASGIScope:
+    """
+    Base class for any ASGI scope.
+    """
     type: str
     asgi: dict[str, str]
+
+    @property
+    def asgi_version(self) -> str:
+        return self.asgi.get("version", default="2.0")
+
+    @property
+    def asgi_spec_version(self) -> str:
+        return self.asgi.get("spec_version", default="2.0")
+
+
+@dataclass(frozen=True)
+class ASGIConnectionScope(BaseASGIScope):
+    """
+    Base class for any connection from ASGI server.
+    """
     http_version: str
     scheme: str
     path: str
@@ -30,17 +48,12 @@ class ASGIConnectionScope:
             "Asgi spec_version must be only 2.1 or 2.0"
         )
 
-    @property
-    def asgi_version(self) -> str:
-        return self.asgi.get("version", default="2.0")
-
-    @property
-    def asgi_spec_version(self) -> str:
-        return self.asgi.get("spec_version", default="2.0")
-
 
 @dataclass(frozen=True)
 class HttpASGIConnectionScope(ASGIConnectionScope):
+    """
+    Class for HTTP connection scope parameters.
+    """
     type: str = field(default="http")
     scheme: str = field(default="http")
     raw_path: Optional[str] = field(default=None)
@@ -54,6 +67,9 @@ class HttpASGIConnectionScope(ASGIConnectionScope):
 
 @dataclass(frozen=True)
 class WebSocketASGIConnectionScope(ASGIConnectionScope):
+    """
+    Class for WebSockets ASGI connections scope.
+    """
     type: str = field(default="websocket")
     scheme: str = field(default="ws")
     raw_path: Optional[str] = field(default=None)
@@ -65,3 +81,10 @@ class WebSocketASGIConnectionScope(ASGIConnectionScope):
             "Invalid scheme for WebSocketAsgiConnectionScope "
             f"(got {self.scheme})"
         )
+
+
+@dataclass(frozen=True)
+class LifetimeASGIScope(BaseASGIScope):
+    """
+    Class that represents lifetime messages from ASGI server.
+    """

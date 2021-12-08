@@ -26,13 +26,19 @@ class StartupComplete(LifetimeEvent):
 
 class StartupFailed(LifetimeEvent):
     """
-    Server failed to start due to some issue.
+    Framework failed to start due to some issue.
     """
     type: str = "lifespan.startup.failed"
 
     def __init__(self, message: Optional[str] = None):
         self.message: str = message or ""
+
+    def emit_startup_failed(self):
         events_logger.error(self.message)
+        return {
+            "type": self.type,
+            "message": self.message
+        }
 
 
 class Shutdown(LifetimeEvent):
@@ -43,6 +49,9 @@ class Shutdown(LifetimeEvent):
 
 
 class ShutdownComplete(LifetimeEvent):
+    """
+    Framework been successfully shut down.
+    """
     type: str = "lifespan.shutdown.complete"
 
     @classmethod
@@ -56,11 +65,16 @@ class ShutdownComplete(LifetimeEvent):
 
 
 class ShutdownFailed(LifetimeEvent):
+    """
+    Framework failed to shut down.
+    """
     type: str = "lifespan.shutdown.failed"
 
-    @classmethod
+    def __init__(self, message: Optional[str] = None):
+        self.message = message or None
+
     def emit_server_shutdown_failure(
-        cls, message: Optional[str] = None
+        self, message: Optional[str] = None
     ) -> dict[str, str]:
         """
         Gives dict that will tell server that shutdown
@@ -69,10 +83,9 @@ class ShutdownFailed(LifetimeEvent):
         :param message: reason why shutdown failed.
         :return: dictionary with message.
         """
-        message = message or None
-        events_logger.error(f"Shutdown failed with message: {message}")
 
+        events_logger.error(f"Shutdown failed with message: {message}")
         return {
-            "type": cls.type,
+            "type": self.type,
             "message": message
         }

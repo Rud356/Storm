@@ -1,7 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Awaitable
 
-from .asgi_scope import HttpASGIConnectionScope, WebSocketASGIConnectionScope
+from .asgi_scope import (
+    HttpASGIConnectionScope,
+    WebSocketASGIConnectionScope,
+    LifetimeASGIScope
+)
 from .asgi_supported_types import ASGI_SUPPORTED_TYPES
 
 
@@ -42,6 +46,10 @@ class ASGIApp(ABC):
         elif connection_type == "websocket":
             scope = WebSocketASGIConnectionScope(**scope)
             await self.websocket_asgi_app(scope, receive, send)
+
+        elif connection_type == "lifetime":
+            scope = LifetimeASGIScope(**scope)
+            await self.lifetime_asgi_app(scope, receive, send)
 
         else:
             # Something must've gone very wrong on asgi server side
@@ -95,3 +103,26 @@ class ASGIApp(ABC):
         :return: nothing.
         """
         pass
+
+    @abstractmethod
+    async def lifetime_asgi_app(
+        self,
+        scope: LifetimeASGIScope,
+        receive: Callable[
+            [],
+            Awaitable[ASGI_SUPPORTED_TYPES]
+        ],
+        send: Callable[
+            [ASGI_SUPPORTED_TYPES],
+            Awaitable[ASGI_SUPPORTED_TYPES]
+        ]
+    ):
+        """
+        Method that handles request as websocket request.
+
+        :param scope: concrete dataclass instance with connection scope.
+        :param receive: function that is used to receive ASGI server events
+            as dicts.
+        :param send: function that is used to respond on received ASGI events.
+        :return: nothing.
+        """
