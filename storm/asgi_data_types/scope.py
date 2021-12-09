@@ -1,5 +1,5 @@
-from typing import Iterable, Union, Optional
 from dataclasses import dataclass, field
+from typing import Iterable, Optional
 
 
 @dataclass(frozen=True)
@@ -9,6 +9,7 @@ class BaseASGIScope:
     """
     type: str
     asgi: dict[str, str]
+    extensions: dict[str, dict]
 
     @property
     def asgi_version(self) -> str:
@@ -27,16 +28,12 @@ class ASGIConnectionScope(BaseASGIScope):
     http_version: str
     scheme: str
     path: str
-    raw_path: Optional[str]
-    query_string: str
     root_path: str
+    raw_path: Optional[str]
+    query_string: Optional[bytes]
     headers: Iterable[tuple[bytes, bytes]]
-    client: Iterable[
-        Union[tuple[str, int], tuple[str, None]]
-    ]
-    server: Iterable[
-        Union[tuple[str, int], tuple[str, None]]
-    ]
+    client: Iterable[tuple[str, Optional[int]]]
+    server: Iterable[tuple[str, Optional[int]]]
 
     def __post_init__(self):
         assert self.asgi_version in {"3.0"}, (

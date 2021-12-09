@@ -1,12 +1,21 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Awaitable
 
-from .asgi_scope import (
+from .scope import (
     HttpASGIConnectionScope,
     WebSocketASGIConnectionScope,
     LifetimeASGIScope
 )
-from .asgi_supported_types import ASGI_SUPPORTED_TYPES
+from .supported_types import ASGI_SUPPORTED_TYPES
+
+receive_typehint = Callable[
+    [],
+    Awaitable[ASGI_SUPPORTED_TYPES]
+]
+send_typehint = Callable[
+    [ASGI_SUPPORTED_TYPES],
+    Awaitable[ASGI_SUPPORTED_TYPES]
+]
 
 
 class ASGIApp(ABC):

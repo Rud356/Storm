@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from storm.storm_types.headers import Headers
-from .asgi_supported_types import ASGI_SUPPORTED_TYPES
+from storm.headers import Headers
+from .supported_types import ASGI_SUPPORTED_TYPES
 from .base_event import Event
 
 
