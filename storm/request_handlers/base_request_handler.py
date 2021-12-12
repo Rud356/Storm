@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import codecs
 from abc import ABC, abstractmethod
 from functools import cached_property
 from http import cookies
@@ -21,6 +22,7 @@ from storm.request_parameters import (
     CookieParameter,
     URLParameter
 )
+from storm.internal_types import LocaleProbability
 from storm.request_parameters.url_parameter import compile_type_to_named_group
 from .utils import parse_parameter_typehint, ParameterProperties
 
@@ -39,7 +41,7 @@ class StormBaseHandler(ABC):
 
     def __init__(
         self,
-        app: StormApp,  # TODO: change to base storm app
+        app: StormApp,
         scope: ASGIConnectionScope,
         receive: receive_typehint,
         parsed_arguments: re.Match
@@ -121,17 +123,42 @@ class StormBaseHandler(ABC):
         fetch it from some other place.
         :return: locale name string.
         """
-        # TODO: finish this method
         return None
 
-    def get_browsers_locale(self, default: str = "en_US") -> str:
+    def get_browsers_locales(self, default: str = "en_US") -> list[LocaleProbability]:
         """
-        This method is used to fetch locale from requests headers.
+        This method is used to fetch locales from requests headers.
         :param default: default locale if none are found.
-        :return: string with locale name.
+        :return: list of named tuples, sorted by weight.
         """
-        # TODO: finish this method
-        ...
+        # Based on tornado implementation:
+        # https://github.com/tornadoweb/tornado/blob/208672f3bf6cbb7e37f54c356e02a71ca29f1e02/tornado/web.py#L1279
+        if 'Accept-Language' not in self.headers:
+            return default
+
+        languages = self.headers['Accept-Language'].split(',')
+        locales = []
+
+        for language in languages:
+            parts = language.strip().partition(";")
+            score = 0.0
+            if parts[1].startswith('q='):
+                try:
+                    score = float(parts[1][:2])
+
+                except (ValueError, TypeError):
+                    pass
+
+            else:
+                score = 1.0
+
+            locales.append(LocaleProbability(parts[0], score))
+
+        if locales:
+            locales.sort(key=lambda v: v.weight)
+            return locales
+
+        return [LocaleProbability(default, 1.0)]
 
     @property
     def config(self) -> Mapping:
