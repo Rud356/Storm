@@ -23,6 +23,12 @@ class StartupComplete(LifetimeEvent):
     """
     type: str = "lifespan.startup.complete"
 
+    @classmethod
+    def emit_startup_finished(cls) -> dict:
+        return {
+            "type": cls.type
+        }
+
 
 class StartupFailed(LifetimeEvent):
     """
@@ -34,7 +40,6 @@ class StartupFailed(LifetimeEvent):
         self.message: str = message or ""
 
     def emit_startup_failed(self):
-        events_logger.error(self.message)
         return {
             "type": self.type,
             "message": self.message
@@ -74,18 +79,25 @@ class ShutdownFailed(LifetimeEvent):
         self.message = message or None
 
     def emit_server_shutdown_failure(
-        self, message: Optional[str] = None
+        self
     ) -> dict[str, str]:
         """
         Gives dict that will tell server that shutdown
         failed and optionally a reason why.
 
-        :param message: reason why shutdown failed.
         :return: dictionary with message.
         """
 
-        events_logger.error(f"Shutdown failed with message: {message}")
+        events_logger.error(f"Shutdown failed with message: {self.message}")
         return {
             "type": self.type,
-            "message": message
+            "message": self.message
         }
+
+
+def dispatch_incoming_lifetime_event(event_type: str) -> Event:
+    known_events = {
+        Startup.type: Startup,
+        Shutdown.type: Shutdown
+    }
+    return known_events[event_type]()

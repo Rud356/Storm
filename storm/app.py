@@ -2,20 +2,22 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor, Executor
 from typing import Generic, TypeVar, Mapping, Optional, Type
 
+from storm.loggers import events_logger
 from .asgi_data_types import (
     HttpASGIConnectionScope,
     LifetimeASGIScope,
     WebSocketASGIConnectionScope,
     send_typehint,
     receive_typehint,
-    events
+    events,
+    lifespan_events
 )
 from .asgi_data_types.app import ASGIApp
 from .request_handlers import HttpHandler, WebSocketHandler
-from .routing import Router, HandlerNotFound, MatchedHandler
-from storm.loggers import events_logger
 from .responses import BaseHttpResponse
 from .responses.http_errors import HttpError
+from .routing import Router, HandlerNotFound, MatchedHandler
+
 ConfigType = TypeVar("ConfigType", bound=Mapping)
 
 
@@ -48,6 +50,14 @@ class StormApp(ASGIApp, Generic[ConfigType]):
         receive: receive_typehint,
         send: send_typehint
     ) -> None:
+        """
+        Method for handling any incoming http asgi connection.
+
+        :param scope: prefetched data.
+        :param receive: method for receiving data.
+        :param send: method for sending response.
+        :return: None.
+        """
         try:
             matched_handler: MatchedHandler[
                 Type[HttpHandler]
@@ -98,6 +108,15 @@ class StormApp(ASGIApp, Generic[ConfigType]):
         receive: receive_typehint,
         send: send_typehint
     ) -> None:
+        """
+        Method for handling any incoming websocket asgi connection.
+
+        :param scope: prefetched data.
+        :param receive: method for receiving data.
+        :param send: method for sending response.
+        :return: None.
+        """
+
         try:
             matched_handler: MatchedHandler[
                 Type[WebSocketHandler]
@@ -124,7 +143,50 @@ class StormApp(ASGIApp, Generic[ConfigType]):
         receive: receive_typehint,
         send: send_typehint
     ):
-        pass
+        try:
+            event = lifespan_events.dispatch_incoming_lifetime_event(
+                scope.type
+            )
+
+        except KeyError as err:
+            raise KeyError(
+                f"Unknown event type of lifetime events: {scope.type}"
+            ) from err
+
+        if isinstance(event, lifespan_events.Startup):
+            try:
+                events_logger.info("Server started")
+                await self.on_start()
+
+            except Exception as err:
+                events_logger.error("Server failed to start", exc_info=err)
+                await send(
+                    lifespan_events.StartupFailed(
+                        message=str(err)
+                    ).emit_startup_failed()
+                )
+
+            else:
+                await send(
+                    lifespan_events.StartupComplete().emit_startup_finished()
+                )
+
+        else:
+            try:
+                await self.on_shutdown()
+
+            except Exception as err:
+                events_logger.error("Server failed to shut down", exc_info=err)
+                await send(
+                    lifespan_events.ShutdownFailed(
+                        message=str(err)
+                    ).emit_server_shutdown_failure()
+                )
+
+            else:
+                await send(
+                    lifespan_events.ShutdownComplete.emit_shutdown_complete()
+                )
 
     async def on_start(self) -> None:
         """
