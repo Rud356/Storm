@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import codecs
 from abc import ABC, abstractmethod
 from functools import cached_property
 from http import cookies
@@ -16,13 +15,13 @@ from storm.asgi_data_types import ConnectionProperties
 from storm.asgi_data_types import receive_typehint
 from storm.asgi_data_types.scope import ASGIConnectionScope
 from storm.headers import Headers
+from storm.internal_types import LocaleProbability
 from storm.request_parameters import (
     BaseRequestParameter,
     QueryParameter,
     CookieParameter,
     URLParameter
 )
-from storm.internal_types import LocaleProbability
 from storm.request_parameters.url_parameter import compile_type_to_named_group
 from .utils import parse_parameter_typehint, ParameterProperties
 
