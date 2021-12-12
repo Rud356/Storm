@@ -33,7 +33,7 @@ class Headers(dict[str, str]):
         )
         super().__setattr__(key.lower(), value)
 
-    def __iter__(self) -> list[tuple[bytes, bytes]]:
+    def to_list(self) -> list[tuple[bytes, bytes]]:
         """
         This method encodes headers to how they must be
         given to ASGI server.

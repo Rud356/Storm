@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from http.cookies import SimpleCookie
 from typing import Union, Optional
 
+from storm.asgi_data_types import events
 from storm.headers import Headers
+from storm.internal_types import CustomCookie
 from .cookie_same_site_parameter import SameSite
 from .response_body import ResponseBody
 
@@ -11,7 +12,17 @@ from .response_body import ResponseBody
 class BaseHttpResponse(ABC):
     status: int
     headers: Headers
-    cookies: SimpleCookie
+    cookies: CustomCookie
+
+    def response_start(self) -> events.HttpResponseStart:
+        headers: list[tuple[bytes, bytes]] = self.headers.to_list()
+        headers.extend(self.cookies.as_headers_list())
+
+        self.headers['Cookies-Set'] = self.cookies.output().strip(" ")
+        return events.HttpResponseStart(
+            self.status,
+            headers
+        )
 
     @abstractmethod
     async def get_body(self) -> ResponseBody:

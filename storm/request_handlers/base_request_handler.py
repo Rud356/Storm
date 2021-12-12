@@ -7,7 +7,7 @@ from http import cookies
 from typing import (
     Any, Optional, Type,
     get_args, get_type_hints, get_origin,
-    TYPE_CHECKING, Mapping
+    TYPE_CHECKING, Mapping, Union
 )
 from urllib.parse import parse_qs
 
@@ -97,7 +97,12 @@ class StormBaseHandler(ABC):
         """
         pass
 
-    async def on_unexpected_error(self, exception: Exception) -> None:
+    async def on_unexpected_error(self, exception: Exception):
+        """
+        Gives some response when unexpected error occurred.
+        :param exception: some unhandled exception.
+        :return: any suiting response instance.
+        """
         pass
 
     async def on_finish(self) -> None:
@@ -222,6 +227,16 @@ class StormBaseHandler(ABC):
                     f"\turl: {self.url}\n)"
                 ) from err
 
+    @classmethod
+    def __eq__(cls, other: Union[Any, StormBaseHandler]) -> bool:
+        if issubclass(type(other), cls):
+            return hash(cls.url) == hash(other.url)
+
+        else:
+            raise NotImplementedError(
+                "Can not compare other with StormBaseHandler on equality"
+            )
+
     @staticmethod
     def __initialize_request_parameter(
         cls: Type[StormBaseHandler],
@@ -304,6 +319,18 @@ class StormBaseHandler(ABC):
                 f"All parameters names must be a valid python identifiers."
             )
 
+        # We have to make sure all url parameters are used in url
+        url_params_difference = set(
+            cls._url_parameters_properties.keys()
+        ).difference(parameters_names)
+
+        if url_params_difference:
+            raise KeyError(
+                "Following url parameters aren't "
+                "represented in handlers url "
+                f"({cls.url}):\n{url_params_difference}"
+            )
+
         compiled_url = cls.url
         for parameter in parameters_names:
             url_parameters_properties: Optional[ParameterProperties] = \
@@ -324,3 +351,6 @@ class StormBaseHandler(ABC):
 
         compiled_url_regex = re.compile(compiled_url)
         return compiled_url_regex
+
+    def __str__(self):
+        return f"{self.__name__} on url {self.url}"

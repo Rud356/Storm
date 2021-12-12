@@ -31,6 +31,18 @@ class CompilableUrlParameter(Protocol):
 class URLParameter(BaseRequestParameter):
     """
     Class that is used to represent url parameters as handlers attribute.
+    All names of parameters will be matched to groups names, specified in
+    url as <name>. For example /api/<version>. They must always exist and
+    it's forbidden to type hint them as optional.
+    Examples:
+
+    .. code-block:: python
+
+        class A(StormBaseHandler, url="/api/<version>"):
+            version: UrlParameter[int]
+
+            def get(self):
+                print(self.version)  # int
     """
 
 

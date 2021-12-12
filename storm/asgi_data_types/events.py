@@ -39,15 +39,15 @@ class HttpResponseStart(HttpSendEvent):
     """
     type: str = "http.request"
 
-    def __init__(self, status: int, headers: Headers):
+    def __init__(self, status: int, headers: list[tuple[bytes, bytes]]):
         self.status: int = status
-        self.headers: Headers = headers
+        self.headers: list[tuple[bytes, bytes]] = headers
 
     def to_dict(self) -> ASGI_SUPPORTED_TYPES:
         return {
             "type": self.type,
             "status": self.status,
-            "headers": iter(self.headers)
+            "headers": self.headers
         }
 
 
