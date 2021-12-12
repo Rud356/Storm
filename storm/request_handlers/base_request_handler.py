@@ -133,7 +133,7 @@ class StormBaseHandler(ABC):
         # Based on tornado implementation:
         # https://github.com/tornadoweb/tornado/blob/208672f3bf6cbb7e37f54c356e02a71ca29f1e02/tornado/web.py#L1279
         if 'Accept-Language' not in self.headers:
-            return default
+            return [LocaleProbability(default, 1.0)]
 
         languages = self.headers['Accept-Language'].split(',')
         locales = []
