@@ -77,6 +77,7 @@ class HttpASGIConnectionScope(ASGIConnectionScope):
         asgi: dict[str, str],
         extensions: dict[str, dict],
         http_version: str,
+        method: str,
         scheme: str,
         path: str,
         root_path: str,
@@ -86,6 +87,7 @@ class HttpASGIConnectionScope(ASGIConnectionScope):
         client: Iterable[tuple[str, Optional[int]]],
         server: Iterable[tuple[str, Optional[int]]]
     ):
+        self.method: str = method
         super(HttpASGIConnectionScope, self).__init__(
             type=type or "http", asgi=asgi, extensions=extensions,
             http_version=http_version, scheme=scheme or "http",
@@ -105,10 +107,6 @@ class WebSocketASGIConnectionScope(ASGIConnectionScope):
     """
     Class for WebSockets ASGI connections scope.
     """
-    type: str = field(default="websocket")
-    scheme: str = field(default="ws")
-    raw_path: Optional[str] = field(default=None)
-    subprotocols: Iterable[str] = field(default_factory=list)
 
     def __init__(
         self,

@@ -18,7 +18,6 @@ class BaseHttpResponse(ABC):
         headers: list[tuple[bytes, bytes]] = self.headers.to_list()
         headers.extend(self.cookies.as_headers_list())
 
-        self.headers['Cookies-Set'] = self.cookies.output().strip(" ")
         return events.HttpResponseStart(
             self.status,
             headers

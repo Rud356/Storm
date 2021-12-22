@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-from storm.headers import Headers
-from .supported_types import ASGI_SUPPORTED_TYPES
 from .base_event import Event
+from .supported_types import ASGI_SUPPORTED_TYPES
 
 
 class HttpEvent(Event, ABC):

@@ -3,11 +3,10 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from functools import cached_property
-from http import cookies
 from typing import (
     Any, Optional, Type,
     get_args, get_type_hints, get_origin,
-    TYPE_CHECKING, Mapping, Union
+    TYPE_CHECKING, Mapping
 )
 from urllib.parse import parse_qs
 
@@ -15,7 +14,7 @@ from storm.asgi_data_types import ConnectionProperties
 from storm.asgi_data_types import receive_typehint
 from storm.asgi_data_types.scope import ASGIConnectionScope
 from storm.headers import Headers
-from storm.internal_types import LocaleProbability
+from storm.internal_types import LocaleProbability, CustomCookie
 from storm.request_parameters import (
     BaseRequestParameter,
     QueryParameter,
@@ -31,7 +30,6 @@ if TYPE_CHECKING:
 
 class StormBaseHandler(ABC):
     url: str
-    url_regex: re.Pattern
     is_static_url: bool = True
 
     _query_parameters_properties: dict[str, ParameterProperties]
@@ -47,12 +45,13 @@ class StormBaseHandler(ABC):
     ):
         self.app = app
         self.scope: ASGIConnectionScope = scope
+        self.url: str = scope.path
         self.request_origin_path: str = scope.path
-        self.headers: Headers = Headers({
-            header.decode("utf-8").lower(): value.decode("utf-8")
-            for header, value in scope.headers
-        })
-        self.cookies = cookies.SimpleCookie()
+        self.headers: Headers = Headers()
+        for header, value in scope.headers:
+            self.headers[header.decode('utf-8')] = value.decode('utf-8')
+
+        self.cookies: CustomCookie = CustomCookie()
         self.cookies.load(
             self.headers.get("Cookie", "")
         )
@@ -68,6 +67,9 @@ class StormBaseHandler(ABC):
     async def execute(self) -> Any:
         self._init_query_parameters()
         self._init_cookie_parameters()
+        self._init_url_parameters()
+        # TODO: add init of injectables
+        await self.prepare()
 
     @cached_property
     def client(self) -> ConnectionProperties:
@@ -164,16 +166,6 @@ class StormBaseHandler(ABC):
         return self.app.config
 
     def __init_subclass__(cls, **kwargs) -> None:
-        try:
-            cls.url = kwargs.pop("url")
-
-        except KeyError:
-            raise KeyError(
-                "url parameter is required to be passed "
-                "as class argument or as class creation argument."
-                " For example: class Handler(StormBaseHandler, url='/'): ..."
-            )
-
         cls.is_static_url = True
         cls._query_parameters_properties = {}
         cls._url_parameters_properties = {}
@@ -186,8 +178,6 @@ class StormBaseHandler(ABC):
                 cls.__initialize_request_parameter(
                     cls, origin, attr_key, attr_value
                 )
-
-        cls.url_regex = cls.__compile_url(cls)
 
     def _init_query_parameters(self) -> None:
         """
@@ -249,19 +239,7 @@ class StormBaseHandler(ABC):
                     f"Group with name {attr_key} not found"
                     f" in url parameters, but url was matched."
                     f"(\n\tfound_parameters: {self._parsed_arguments}\n"
-                    f"\tregex: {self.url_regex}\n"
-                    f"\turl: {self.url}\n)"
                 ) from err
-
-    @classmethod
-    def __eq__(cls, other: Union[Any, StormBaseHandler]) -> bool:
-        if issubclass(type(other), cls):
-            return hash(cls.url) == hash(other.url)
-
-        else:
-            raise NotImplementedError(
-                "Can not compare other with StormBaseHandler on equality"
-            )
 
     @staticmethod
     def __initialize_request_parameter(
@@ -315,12 +293,13 @@ class StormBaseHandler(ABC):
             cls._url_parameters_properties[attr_key] = parameter_properties
 
     @staticmethod
-    def __compile_url(
-        cls: Type[StormBaseHandler]
+    def _compile_url_regex(
+        cls: Type[StormBaseHandler],
+        url: str
     ) -> re.Pattern:
         """
         Compiles url into url_regex that will be used when looking
-        for a route based on found URLParameter typehints.
+        for a route based on found URLParameter type hints.
 
         :param cls: subclass of StormBaseHandler we are initializing.
         :return: re.compile output after manipulations.
@@ -328,7 +307,7 @@ class StormBaseHandler(ABC):
         parameters_names_regex = re.compile(r"<(\w+)>")
         parameters_names: set[str] = set(
             parameters_names_regex.findall(
-                cls.url
+                url
             )
         )
 
@@ -354,10 +333,10 @@ class StormBaseHandler(ABC):
             raise KeyError(
                 "Following url parameters aren't "
                 "represented in handlers url "
-                f"({cls.url}):\n{url_params_difference}"
+                f"({url}):\n{url_params_difference}"
             )
 
-        compiled_url = cls.url
+        compiled_url = url
         for parameter in parameters_names:
             url_parameters_properties: Optional[ParameterProperties] = \
                 cls._url_parameters_properties.get(

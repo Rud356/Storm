@@ -3,6 +3,7 @@ from typing import Any, Optional
 
 from storm.headers import Headers
 from .. import ResponseBody
+from storm.internal_types import CustomCookie
 from ..base_http_response import BaseHttpResponse
 from ..response_encoders import BaseResponseEncoder
 from ..response_encoders import TextEncoder
@@ -13,7 +14,7 @@ class HttpError(Exception, BaseHttpResponse):
         self,
         status: int,
         headers: Optional[Headers] = None,
-        cookies: Optional[SimpleCookie] = None,
+        cookies: Optional[CustomCookie] = None,
         message: Optional[Any] = None,
         response_encoder: BaseResponseEncoder = TextEncoder()
     ):
@@ -27,7 +28,7 @@ class HttpError(Exception, BaseHttpResponse):
             self.headers = Headers()
 
         if self.cookies is None:
-            self.cookies = SimpleCookie()
+            self.cookies = CustomCookie()
 
     async def get_body(self) -> ResponseBody:
         if self.message is not None:

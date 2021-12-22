@@ -1,8 +1,8 @@
-from typing import Iterable
+from typing import Union
 from string import printable
 
 
-class Headers(dict[str, str]):
+class Headers(dict[str, Union[str, list[str]]]):
     @staticmethod
     def is_string_printable(string: str) -> bool:
         """
@@ -31,7 +31,19 @@ class Headers(dict[str, str]):
             "Headers key or value containing not printable characters"
             " (headers must only contain ascii chars that are printable)."
         )
-        super().__setattr__(key.lower(), value)
+        lowered_key = key.lower()
+
+        if lowered_key in self.keys():
+            if isinstance(self[lowered_key], list):
+                self[lowered_key].append(value)
+
+            else:
+                super().__setattr__(
+                    lowered_key, [self[lowered_key], value]
+                )
+
+        else:
+            super(Headers, self).__setattr__(lowered_key, value)
 
     def to_list(self) -> list[tuple[bytes, bytes]]:
         """
@@ -40,7 +52,19 @@ class Headers(dict[str, str]):
         :return: a tuple of tuples with headers key and value,
         all encoded in utf-8.
         """
-        return [
-            (key.encode("utf-8"), value.encode("utf-8"))
-            for key, value in self.items()
-        ]
+        headers_list: list[tuple[bytes, bytes]] = []
+        for key, value in self.items():
+            if isinstance(value, list):
+                headers_list.extend(
+                    [
+                        (key.encode('utf-8'), header_value.encode('utf-8'))
+                        for header_value in value
+                    ]
+                )
+
+            else:
+                headers_list.append(
+                    (key.encode('utf-8'), value.encode('utf-8'))
+                )
+
+        return headers_list

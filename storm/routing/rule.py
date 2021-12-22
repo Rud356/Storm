@@ -32,9 +32,12 @@ class RegexRule(Protocol):
     Class that is used internally to find if handler known to this
     rule is one that been asked for.
     """
-    def __init__(self, handler: Type[HandlerType]):
+    def __init__(self, handler: Type[HandlerType], url: str):
         self.handler: Type[HandlerType] = handler
-        self.url_regex: re.Pattern = handler.url_regex
+        self.url_regex: re.Pattern = handler._compile_url_regex(  # noqa:
+            # this is internal stuff, but we don't need end users to see it
+            handler, url
+        )
         self.is_static: bool = handler.is_static_url
 
     @overload
