@@ -6,12 +6,6 @@ from uuid import UUID
 
 from .request_parameter import BaseRequestParameter
 
-SUPPORTED_TYPES = Union[
-    int, float, str,
-    Path, datetime, date,
-    time
-]
-
 
 @runtime_checkable
 class CompilableUrlParameter(Protocol):
@@ -46,16 +40,14 @@ class URLParameter(BaseRequestParameter):
     """
 
 
-@cache
 def compile_type_to_regex(
-    type_to_compile: Union[
-        Type[CompilableUrlParameter],
-        SUPPORTED_TYPES
-    ]
+    type_to_compile: type
 ) -> str:
     """
     Compiles some type into a regex, that will represent it in url,
-    and later will be used to unpack url params.
+    and later will be used to unpack url params. Be default following types
+    are supported: int, bool, float, str, Path, datetime, date, time, UUID.
+    You can add custom types by implementing CompilableUrlParameter protocol.
 
     :param type_to_compile: some type.
     :return: regex as string.
@@ -96,7 +88,7 @@ def compile_type_to_regex(
 
 def compile_type_to_named_group(
     name: str,
-    type_to_compile: Union[Type, SUPPORTED_TYPES]
+    type_to_compile: Type
 ) -> str:
     """
     Function that compiles type to a named group in regex.

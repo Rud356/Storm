@@ -1,7 +1,7 @@
 from typing import Type
 from abc import ABC, abstractmethod
 from storm.asgi_data_types import ASGIConnectionScope
-from storm.request_handlers.base_request_handler import StormHandler
+from storm.request_handlers.base_request_handler import StormBaseHandler
 
 
 class BaseRouter(ABC):
@@ -10,7 +10,7 @@ class BaseRouter(ABC):
     """
 
     @abstractmethod
-    def bind_handler(self, handler: Type[StormHandler]):
+    def bind_handler(self, handler: Type[StormBaseHandler]):
         """
         Connects given handler to exact router.
         :param handler:
@@ -23,5 +23,5 @@ class BaseRouter(ABC):
     @abstractmethod
     async def find_handler(
         self, scope: ASGIConnectionScope
-    ) -> Type[StormHandler]:
+    ) -> Type[StormBaseHandler]:
         pass

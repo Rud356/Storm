@@ -25,13 +25,13 @@ class StormApp(ASGIApp, Generic[ConfigType]):
     def __init__(
         self,
         router: Router,
+        config: ConfigType,
         routing_executor: Executor = ThreadPoolExecutor(
             thread_name_prefix="routing_"
         ),
         debug: bool = __debug__,
         name: str = "Storm App",
         host: str = "localhost",
-        config: Optional[ConfigType] = None
     ):
         self.debug = debug
         self.name = name
@@ -41,8 +41,6 @@ class StormApp(ASGIApp, Generic[ConfigType]):
         self.routing_executor: Executor = routing_executor
 
         self.router.order_routes()
-        if self.config is None:
-            self.config = {}
 
     async def http_asgi_app(
         self,
@@ -77,7 +75,7 @@ class StormApp(ASGIApp, Generic[ConfigType]):
             self, scope, receive, matched_handler.arguments
         )
 
-        response: BaseHttpResponse = await self.execute_handler(
+        response: BaseHttpResponse = await self.execute_http_handler(
             handler_instance
         )
 
@@ -204,7 +202,7 @@ class StormApp(ASGIApp, Generic[ConfigType]):
         """
 
     @staticmethod
-    async def execute_handler(
+    async def execute_http_handler(
         handler_instance: HttpHandler
     ) -> BaseHttpResponse:
         handler = type(handler_instance)
@@ -212,17 +210,17 @@ class StormApp(ASGIApp, Generic[ConfigType]):
         # a case when it can be not initialized
 
         try:
-            response: Optional[BaseHttpResponse] = (
+            response = (
                 await handler_instance.execute()
             )
 
         # Handle expected http errors that are also are exceptions
         except HttpError as http_error:
-            response: BaseHttpResponse = http_error
+            response = http_error
 
         # Handle unexpected errors
         except Exception as err:
-            response: Optional[BaseHttpResponse] = (
+            response = (
                 await handler_instance.on_unexpected_error(err)
             )
 

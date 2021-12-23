@@ -71,15 +71,16 @@ class Router:
         else:
             raise HandlerNotFound()
 
-    def add_handler(self, handler: Type[StormBaseHandler]) -> None:
+    def add_handler(self, handler: Type[StormBaseHandler], url: str) -> None:
         """
         Adds other handler inside of router.
 
         :param handler: handlers type.
+        :param url: url that handler will be bound to.
         :return: nothing.
         """
         handler_type = handler
-        rule = RegexRule(handler)
+        rule = RegexRule(handler, url)
 
         if issubclass(handler_type, HttpHandler):
             if handler_type in self.http_rules:
@@ -105,33 +106,33 @@ class Router:
         :param another_router: instance of another router.
         :return: nothing.
         """
-        for route in another_router.http_rules:
-            if route.handler in self.http_rules:
-                duplicate_index = self.http_rules.index(route)
+        for rule in another_router.http_rules:
+            if rule.handler in self.http_rules:
+                duplicate_index = self.http_rules.index(rule)
 
                 raise NotUniqueHandlerUrl(
-                    f"Duplicate url {route.handler.url} has been found "
+                    f"Duplicate url {rule.handler.url} has been found "
                     "in handlers:"
-                    f" {type(route.handler).__name__} and "
+                    f" {type(rule.handler).__name__} and "
                     f"{type(self.http_rules[duplicate_index]).__name__}"
                 )
 
             else:
-                self.http_rules.append(route)
+                self.http_rules.append(rule)
 
-        for route in another_router.ws_rules:
-            if route.handler in self.ws_rules:
-                duplicate_index = self.ws_rules.index(route)
+        for rule in another_router.ws_rules:
+            if rule.handler in self.ws_rules:
+                duplicate_index = self.ws_rules.index(rule)
 
                 raise NotUniqueHandlerUrl(
-                    f"Duplicate url {route.handler.url} has been found "
+                    f"Duplicate url {rule.handler.url} has been found "
                     "in handlers:"
-                    f" {type(route.handler).__name__} and "
+                    f" {type(rule.handler).__name__} and "
                     f"{type(self.ws_rules[duplicate_index]).__name__}"
                 )
 
             else:
-                self.ws_rules.append(route)
+                self.ws_rules.append(rule)
 
     def order_routes(self) -> None:
         self.ws_rules.sort(

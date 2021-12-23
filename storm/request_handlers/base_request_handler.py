@@ -137,7 +137,12 @@ class StormBaseHandler(ABC):
         if 'Accept-Language' not in self.headers:
             return [LocaleProbability(default, 1.0)]
 
-        languages = self.headers['Accept-Language'].split(',')
+        try:
+            languages = self.headers['Accept-Language'][0].split(',')
+
+        except IndexError:
+            return [LocaleProbability(default, 1.0)]
+
         locales = []
 
         for language in languages:
@@ -194,7 +199,7 @@ class StormBaseHandler(ABC):
                 )
 
             else:
-                attr_value: Any = self.query_parameters[attr_key]
+                attr_value = self.query_parameters[attr_key]
 
             attr_value = attr_properties.casted_to_type(attr_value)
             setattr(self, attr_key, attr_value)
@@ -208,17 +213,18 @@ class StormBaseHandler(ABC):
         for attr_key, attr_properties in self. \
                 _cookies_properties.items():
 
-            if attr_properties.is_optional:
-                attr_value: str = self.cookies.get(
-                    attr_key,
-                    attr_properties.default_value
-                )
-
-            else:
+            try:
                 attr_value: str = self.cookies[attr_key]
 
-            attr_value = attr_properties.casted_to_type(attr_value)
-            setattr(self, attr_key, attr_value)
+            except KeyError:
+                if attr_properties.is_optional:
+                    attr_value = attr_properties.default_value
+
+                else:
+                    raise
+
+            casted_value: type = attr_properties.casted_to_type(attr_value)
+            setattr(self, attr_key, casted_value)
 
     def _init_url_parameters(self) -> None:
         """

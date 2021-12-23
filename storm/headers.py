@@ -2,7 +2,7 @@ from typing import Union
 from string import printable
 
 
-class Headers(dict[str, Union[str, list[str]]]):
+class Headers(dict[str, list[str]]):
     @staticmethod
     def is_string_printable(string: str) -> bool:
         """
@@ -32,18 +32,11 @@ class Headers(dict[str, Union[str, list[str]]]):
             " (headers must only contain ascii chars that are printable)."
         )
         lowered_key = key.lower()
-
         if lowered_key in self.keys():
-            if isinstance(self[lowered_key], list):
-                self[lowered_key].append(value)
-
-            else:
-                super().__setattr__(
-                    lowered_key, [self[lowered_key], value]
-                )
+            self[lowered_key].append(value)
 
         else:
-            super(Headers, self).__setattr__(lowered_key, value)
+            super().__setattr__(lowered_key, [value])
 
     def to_list(self) -> list[tuple[bytes, bytes]]:
         """
@@ -63,8 +56,9 @@ class Headers(dict[str, Union[str, list[str]]]):
                 )
 
             else:
-                headers_list.append(
-                    (key.encode('utf-8'), value.encode('utf-8'))
+                raise ValueError(
+                    f"Unknown type to encode for header: {type(value)}."
+                    "Only lists allowed in headers."
                 )
 
         return headers_list

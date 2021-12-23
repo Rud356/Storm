@@ -1,5 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Type, Optional, get_origin, get_args, Union
+from typing import (
+    Any, Type, Optional,
+    get_origin, get_args, Union
+)
 
 
 @dataclass
@@ -8,7 +11,7 @@ class ParameterProperties:
     Class for storing properties of some request parameter.
     """
     is_optional: bool
-    casted_to_type: Type
+    casted_to_type: Any
     default_value: Optional[Any] = None
 
 
@@ -65,8 +68,7 @@ def parse_parameter_typehint(
 
             else:
                 is_optional = True
-                casted_to_type: tuple[Any, Any]
-                casted_to_type: Type = get_original_type_from_optional(
+                casted_to_type = get_original_type_from_optional(
                     casted_to_type
                 )
 

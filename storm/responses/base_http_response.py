@@ -36,7 +36,7 @@ class BaseHttpResponse(ABC):
     def set_cookie(
         self,
         name: str,
-        value: Union[bytes, str],
+        value: str,
         max_age: Union[int, float, timedelta],
         path: str = "/",
         domain: Optional[str] = None,
@@ -68,14 +68,17 @@ class BaseHttpResponse(ABC):
         self.cookies[name]["secure"] = secure
 
         if isinstance(same_site, SameSite):
-            self.cookies[name]["samesite"] = same_site.strict.value  # noqa:
-            # it's existing key
-            # and nothing can be done about way it's written
+            # We must ignore mypy here because it refuses to understand
+            # that enum must have this value as string
+            self.cookies[name]["samesite"] = same_site.strict.value   # type: ignore
+
+        elif isinstance(same_site, str):
+            self.cookies[name]["samesite"] = SameSite[same_site].value
 
         else:
-            self.cookies[name]["samesite"] = SameSite[same_site].value  # noqa:
-            # it's existing key
-            # and nothing can be done about way it's written
+            raise ValueError(
+                f"Unknown type for same_site parameter: {type(same_site)}"
+            )
 
         if isinstance(max_age, float):
             self.cookies[name]["max-age"] = max_age

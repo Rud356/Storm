@@ -76,7 +76,7 @@ class ShutdownFailed(LifetimeEvent):
     type: str = "lifespan.shutdown.failed"
 
     def __init__(self, message: Optional[str] = None):
-        self.message = message or None
+        self.message = message or ""
 
     def emit_server_shutdown_failure(
         self

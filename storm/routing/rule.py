@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import re
 from typing import (
-    Union, Type, TypeVar,
-    Generic, NamedTuple, Protocol,
-    overload, runtime_checkable
+    Union, Type, TypeVar, Any,
+    Generic, NamedTuple, overload
 )
 
 from storm.asgi_data_types.scope import (
@@ -21,13 +20,16 @@ from .routing_exceptions import NotMatchingRule
 HandlerType = TypeVar("HandlerType", bound=StormBaseHandler)
 
 
-class MatchedHandler(NamedTuple, Generic[HandlerType]):
-    handler: Type[HandlerType]
+class MatchedHandler(Generic[HandlerType]):
+    handler: HandlerType
     arguments: re.Match
 
+    def __init__(self, handler: HandlerType, arguments: re.Match):
+        self.handler = handler
+        self.arguments = arguments
 
-@runtime_checkable
-class RegexRule(Protocol):
+
+class RegexRule(Generic[HandlerType]):
     """
     Class that is used internally to find if handler known to this
     rule is one that been asked for.
@@ -74,6 +76,9 @@ class RegexRule(Protocol):
 
         return MatchedHandler(self.handler, url_parameters)
 
-    def __eq__(self, other: RegexRule):
+    def __eq__(self, other: Any) -> bool:
         if issubclass(type(other), RegexRule):
-            return other.handler == self.handler
+            return other.url_regex == self.url_regex
+
+        else:
+            raise ValueError(f"Can not compare RegexRule instance and {other}")

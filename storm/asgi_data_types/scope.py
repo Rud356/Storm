@@ -27,7 +27,7 @@ class ASGIConnectionScope(BaseASGIScope):
     def __init__(
         self,
         *,
-        type: str,
+        type: str,  # noqa: following naming in ASGI spec
         asgi: dict[str, str],
         extensions: dict[str, dict],
         http_version: str,
@@ -42,7 +42,7 @@ class ASGIConnectionScope(BaseASGIScope):
     ):
         self.type: str = type
         self.asgi: dict[str, str] = asgi
-        self.extensions: extensions = extensions
+        self.extensions: dict[str, dict] = extensions
         self.http_version: str = http_version
         self.scheme: str = scheme
         self.path: str = path
@@ -73,7 +73,7 @@ class HttpASGIConnectionScope(ASGIConnectionScope):
     def __init__(
         self,
         *,
-        type: str,
+        type: str,  # noqa: following naming in ASGI spec
         asgi: dict[str, str],
         extensions: dict[str, dict],
         http_version: str,
@@ -111,7 +111,7 @@ class WebSocketASGIConnectionScope(ASGIConnectionScope):
     def __init__(
         self,
         *,
-        type: str,
+        type: str,  # noqa: following naming in ASGI spec
         asgi: dict[str, str],
         extensions: dict[str, dict],
         http_version: str,
@@ -142,8 +142,16 @@ class WebSocketASGIConnectionScope(ASGIConnectionScope):
         )
 
 
-@dataclass(frozen=True)
 class LifetimeASGIScope(BaseASGIScope):
     """
     Class that represents lifetime messages from ASGI server.
     """
+    def __init__(
+        self,
+        type: str,  # noqa: following naming in ASGI spec
+        asgi: dict[str, str],
+        extensions: dict[str, dict],
+    ):
+        self.type: str = type
+        self.asgi: dict[str, str] = asgi
+        self.extensions: dict[str, dict] = extensions

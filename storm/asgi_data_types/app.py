@@ -49,16 +49,20 @@ class ASGIApp(ABC):
 
         connection_type: str = scope["type"]
         if connection_type == "http":
-            scope = HttpASGIConnectionScope(**scope)
-            await self.http_asgi_app(scope, receive, send)
+            http_scope: HttpASGIConnectionScope = HttpASGIConnectionScope(
+                **scope
+            )
+            await self.http_asgi_app(http_scope, receive, send)
 
         elif connection_type == "websocket":
-            scope = WebSocketASGIConnectionScope(**scope)
-            await self.websocket_asgi_app(scope, receive, send)
+            ws_scope: WebSocketASGIConnectionScope = WebSocketASGIConnectionScope(
+                **scope
+            )
+            await self.websocket_asgi_app(ws_scope, receive, send)
 
         elif connection_type == "lifetime":
-            scope = LifetimeASGIScope(**scope)
-            await self.lifetime_asgi_app(scope, receive, send)
+            lifetime_scope: LifetimeASGIScope = LifetimeASGIScope(**scope)
+            await self.lifetime_asgi_app(lifetime_scope, receive, send)
 
         else:
             # Something must've gone very wrong on asgi server side
