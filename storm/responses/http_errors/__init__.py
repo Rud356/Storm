@@ -1,4 +1,5 @@
 from functools import partial
+
 from .http_exception import HttpError
 
 # Errors with codes 4XX

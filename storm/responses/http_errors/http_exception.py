@@ -1,9 +1,8 @@
-from http.cookies import SimpleCookie
 from typing import Any, Optional
 
 from storm.headers import Headers
-from .. import ResponseBody
 from storm.internal_types import CustomCookie
+from .. import ResponseBody
 from ..base_http_response import BaseHttpResponse
 from ..response_encoders import BaseResponseEncoder
 from ..response_encoders import TextEncoder

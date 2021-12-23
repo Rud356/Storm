@@ -1,5 +1,6 @@
-from typing import Type
 from abc import ABC, abstractmethod
+from typing import Type
+
 from storm.asgi_data_types import ASGIConnectionScope
 from storm.request_handlers.base_request_handler import StormBaseHandler
 

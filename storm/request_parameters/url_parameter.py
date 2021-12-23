@@ -1,7 +1,6 @@
 from datetime import datetime, date, time
-from functools import cache
 from pathlib import Path
-from typing import Type, Union, Protocol, runtime_checkable
+from typing import Type, Protocol, runtime_checkable
 from uuid import UUID
 
 from .request_parameter import BaseRequestParameter

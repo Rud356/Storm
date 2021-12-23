@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import (
     Union, Type, TypeVar, Any,
-    Generic, NamedTuple, overload
+    Generic, overload
 )
 
 from storm.asgi_data_types.scope import (
