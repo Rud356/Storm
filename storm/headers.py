@@ -1,7 +1,7 @@
 from string import printable
 
 
-class Headers(dict[str, list[str]]):
+class Headers(dict):
     @staticmethod
     def is_string_printable(string: str) -> bool:
         """
@@ -36,6 +36,9 @@ class Headers(dict[str, list[str]]):
 
         else:
             super().__setattr__(lowered_key, [value])
+
+    def __getitem__(self, item: str) -> list[str]:
+        return super().__getitem__(item.lower())
 
     def to_list(self) -> list[tuple[bytes, bytes]]:
         """
