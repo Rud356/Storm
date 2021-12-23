@@ -214,7 +214,7 @@ class StormBaseHandler(ABC):
                 _cookies_properties.items():
 
             try:
-                attr_value: str = self.cookies[attr_key]
+                attr_value: str = self.cookies[attr_key].value
 
             except KeyError:
                 if attr_properties.is_optional:

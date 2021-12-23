@@ -17,7 +17,7 @@ from storm.request_handlers import (
 )
 from .routing_exceptions import NotMatchingRule
 
-HandlerType = TypeVar("HandlerType", bound=StormBaseHandler)
+HandlerType = TypeVar("HandlerType", bound=Type[StormBaseHandler])
 
 
 class MatchedHandler(Generic[HandlerType]):

@@ -1,4 +1,3 @@
-from typing import Union
 from string import printable
 
 
@@ -13,7 +12,7 @@ class Headers(dict[str, list[str]]):
         """
         return all(map(lambda char: char in printable, string))
 
-    def __setattr__(self, key: str, value: str) -> None:
+    def __setitem__(self, key: str, value: str) -> None:
         """
         Method that sets new values for headers.
 

@@ -37,8 +37,8 @@ class ASGIConnectionScope(BaseASGIScope):
         raw_path: Optional[str],
         query_string: Optional[bytes],
         headers: Iterable[tuple[bytes, bytes]],
-        client: Iterable[tuple[str, Optional[int]]],
-        server: Iterable[tuple[str, Optional[int]]],
+        client: tuple[str, Optional[int]],
+        server: tuple[str, Optional[int]],
     ):
         self.type: str = type
         self.asgi: dict[str, str] = asgi
@@ -50,8 +50,8 @@ class ASGIConnectionScope(BaseASGIScope):
         self.raw_path: Optional[str] = raw_path
         self.query_string: Optional[bytes] = query_string
         self.headers: Iterable[tuple[bytes, bytes]] = headers
-        self.client: Iterable[tuple[str, Optional[int]]] = client
-        self.server: Iterable[tuple[str, Optional[int]]] = server
+        self.client: tuple[str, Optional[int]] = client
+        self.server: tuple[str, Optional[int]] = server
 
         self.__post_init__()
 
@@ -84,8 +84,8 @@ class HttpASGIConnectionScope(ASGIConnectionScope):
         raw_path: Optional[str],
         query_string: Optional[bytes],
         headers: Iterable[tuple[bytes, bytes]],
-        client: Iterable[tuple[str, Optional[int]]],
-        server: Iterable[tuple[str, Optional[int]]]
+        client: tuple[str, Optional[int]],
+        server: tuple[str, Optional[int]]
     ):
         self.method: str = method
         super(HttpASGIConnectionScope, self).__init__(
@@ -121,8 +121,8 @@ class WebSocketASGIConnectionScope(ASGIConnectionScope):
         raw_path: Optional[str],
         query_string: Optional[bytes],
         headers: Iterable[tuple[bytes, bytes]],
-        client: Iterable[tuple[str, Optional[int]]],
-        server: Iterable[tuple[str, Optional[int]]],
+        client: tuple[str, Optional[int]],
+        server: tuple[str, Optional[int]],
         subprotocols: Iterable[str]
     ):
         self.subprotocols: Iterable[str] = subprotocols or []
