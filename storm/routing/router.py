@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Type
 
-from storm.asgi_data_types.scope import (
+from storm.internal_types.asgi import (
     HttpASGIConnectionScope,
     WebSocketASGIConnectionScope
 )
-from storm.request_handlers import (
+from storm.request.handlers import (
     HttpHandler,
     WebSocketHandler,
     StormBaseHandler

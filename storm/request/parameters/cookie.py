@@ -1,4 +1,4 @@
-from .request_parameter import BaseRequestParameter
+from .base_request_parameter import BaseRequestParameter
 
 
 class CookieParameter(BaseRequestParameter):

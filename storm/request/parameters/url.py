@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Type, Protocol, runtime_checkable
 from uuid import UUID
 
-from .request_parameter import BaseRequestParameter
+from .base_request_parameter import BaseRequestParameter
 
 
 @runtime_checkable

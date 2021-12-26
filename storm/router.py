@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Type
 
-from storm.asgi_data_types import ASGIConnectionScope
-from storm.request_handlers.base_request_handler import StormBaseHandler
+from storm.internal_types.asgi import ASGIConnectionScope
+from storm.request.handlers import StormBaseHandler
 
 
 class BaseRouter(ABC):

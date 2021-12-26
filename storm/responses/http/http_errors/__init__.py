@@ -1,6 +1,6 @@
 from functools import partial
 
-from .http_exception import HttpError
+from .http_error import HttpError
 
 # Errors with codes 4XX
 BadRequest = partial(HttpError, status=400, message="Bad request")

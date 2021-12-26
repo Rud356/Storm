@@ -2,10 +2,10 @@ from typing import Any, Optional
 
 from storm.headers import Headers
 from storm.internal_types import CustomCookie
-from .. import ResponseBody
+from storm.responses.encoders import BaseResponseEncoder
+from storm.responses.encoders import TextEncoder
+from storm.responses.http import ResponseBody
 from ..base_http_response import BaseHttpResponse
-from ..response_encoders import BaseResponseEncoder
-from ..response_encoders import TextEncoder
 
 
 class HttpError(Exception, BaseHttpResponse):

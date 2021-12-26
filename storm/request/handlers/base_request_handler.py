@@ -10,18 +10,19 @@ from typing import (
 )
 from urllib.parse import parse_qs
 
-from storm.asgi_data_types import ConnectionProperties
-from storm.asgi_data_types import receive_typehint
-from storm.asgi_data_types.scope import ASGIConnectionScope
 from storm.headers import Headers
 from storm.internal_types import LocaleProbability, CustomCookie
-from storm.request_parameters import (
+from storm.internal_types.asgi import ASGIConnectionScope
+from storm.internal_types.asgi import ConnectionProperties
+from storm.internal_types.asgi import receive_typehint
+from storm.loggers import handler_logger
+from storm.request.parameters import (
     BaseRequestParameter,
     QueryParameter,
     CookieParameter,
     URLParameter
 )
-from storm.request_parameters.url_parameter import compile_type_to_named_group
+from storm.request.parameters.url import compile_type_to_named_group
 from .utils import parse_parameter_typehint, ParameterProperties
 
 if TYPE_CHECKING:
@@ -59,7 +60,7 @@ class StormBaseHandler(ABC):
             key: value for key, value in
             parse_qs(scope.query_string).items()
         }
-
+        self.logger = handler_logger
         self._receive: receive_typehint = receive
         self._parsed_arguments: re.Match = parsed_arguments
 
@@ -100,7 +101,7 @@ class StormBaseHandler(ABC):
         """
         pass
 
-    async def on_unexpected_error(self, exception: Exception):
+    async def on_unexpected_error(self, exception: Exception) -> Any:
         """
         Gives some response when unexpected error occurred.
         :param exception: some unhandled exception.

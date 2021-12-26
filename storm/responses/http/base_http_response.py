@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from datetime import timedelta
 from typing import Union, Optional
 
-from storm.asgi_data_types import events
 from storm.headers import Headers
 from storm.internal_types import CustomCookie
 from .cookie_same_site_parameter import SameSite
 from .response_body import ResponseBody
+from ...internal_types.asgi import events
 
 
 class BaseHttpResponse(ABC):

@@ -2,9 +2,10 @@ import re
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from storm.asgi_data_types import HttpASGIConnectionScope, receive_typehint
-from storm.responses import BaseHttpResponse, http_errors
+from storm.internal_types.asgi import HttpASGIConnectionScope, receive_typehint
+from storm.responses import BaseHttpResponse
 from .base_request_handler import StormBaseHandler
+from ...responses.http import http_errors
 
 if TYPE_CHECKING:
     from storm.app import StormApp
@@ -42,7 +43,7 @@ class HttpHandler(StormBaseHandler):
 
     async def execute(self) -> BaseHttpResponse:
         await super().execute()
-        python_method_name = self.http_method_to_python_method(
+        python_method_name: str = self.http_method_to_python_method(
             self.scope.method
         )
         method = getattr(self, python_method_name, None)
@@ -56,6 +57,12 @@ class HttpHandler(StormBaseHandler):
 
         except NotImplementedError:
             return self.default_not_implemented_response
+
+        except http_errors.HttpError as http_err:
+            return http_err
+
+        except Exception as unhandled_error:
+            return await self.on_unexpected_error(unhandled_error)
 
     async def get(self) -> BaseHttpResponse:
         raise NotImplementedError()
@@ -74,3 +81,12 @@ class HttpHandler(StormBaseHandler):
 
     async def options(self) -> BaseHttpResponse:
         raise NotImplementedError()
+
+    async def on_unexpected_error(
+        self, exception: Exception
+    ) -> BaseHttpResponse:
+        self.logger.error(
+            f"Unhandled exception in http handler {self}",
+            exc_info=exception
+        )
+        return http_errors.InternalServerError()

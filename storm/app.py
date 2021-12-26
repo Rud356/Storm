@@ -2,20 +2,20 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor, Executor
 from typing import Generic, TypeVar, Mapping, Optional, Type
 
-from storm.loggers import events_logger
-from .asgi_data_types import (
+from storm.internal_types.asgi import (
+    ASGIApp,
     HttpASGIConnectionScope,
     LifetimeASGIScope,
     WebSocketASGIConnectionScope,
     send_typehint,
     receive_typehint,
-    events,
     lifespan_events
 )
-from .asgi_data_types.app import ASGIApp
-from .request_handlers import HttpHandler, WebSocketHandler
+from storm.loggers import events_logger
+from storm.request.handlers import HttpHandler, WebSocketHandler
+from storm.responses.http.http_errors import InternalServerError
+from .internal_types.asgi import events
 from .responses import BaseHttpResponse
-from .responses.http_errors import HttpError
 from .routing import Router, HandlerNotFound, MatchedHandler
 
 ConfigType = TypeVar("ConfigType", bound=Mapping)
@@ -210,24 +210,17 @@ class StormApp(ASGIApp, Generic[ConfigType]):
         # a case when it can be not initialized
 
         try:
-            response = (
-                await handler_instance.execute()
-            )
+            response = await handler_instance.execute()
 
-        # Handle expected http errors that are also are exceptions
-        except HttpError as http_error:
-            response = http_error
-
-        # Handle unexpected errors
+        # Handle unexpected errors that wasn't handled by on_unexpected_error
+        # method in handler (most likely this method failed).
         except Exception as err:
-            response = (
-                await handler_instance.on_unexpected_error(err)
+            response = InternalServerError()
+            events_logger.error(
+                f"Handler {handler_instance} didn't handled "
+                f"error properly with on_unexpected_error.",
+                exc_info=err
             )
-
-            if response is None:
-                events_logger.error(
-                    "Unexpected errors handler didn't returned any response."
-                )
 
         if response is None:
             events_logger.error(
