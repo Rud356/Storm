@@ -34,35 +34,20 @@ class RegexRule(Generic[HandlerType]):
     Class that is used internally to find if handler known to this
     rule is one that been asked for.
     """
-    def __init__(self, handler: Type[HandlerType], url: str):
-        self.handler: Type[HandlerType] = handler
-        self.url_regex: re.Pattern = handler._compile_url_regex(  # noqa:
+    def __init__(self, handler: HandlerType, url: str):
+        self.url: str = url
+        self.handler: HandlerType = handler
+        url_regex, is_static = handler._compile_url_regex(  # noqa:
             # this is internal stuff, but we don't need end users to see it
             handler, url
         )
-        self.is_static: bool = handler.is_static_url
-
-    @overload
-    def match(
-        self,
-        scope: HttpASGIConnectionScope
-    ) -> MatchedHandler[Type[HttpHandler]]:
-        pass
-
-    @overload
-    def match(
-        self,
-        scope: WebSocketASGIConnectionScope
-    ) -> MatchedHandler[Type[WebSocketHandler]]:
-        pass
+        self.url_regex: re.Pattern = url_regex
+        self.is_static: bool = is_static
 
     def match(
         self,
         scope: Union[HttpASGIConnectionScope, WebSocketASGIConnectionScope]
-    ) -> Union[
-        MatchedHandler[Type[HttpHandler]],
-        MatchedHandler[Type[WebSocketHandler]]
-    ]:
+    ) -> MatchedHandler[HandlerType]:
         """
         Checks if scope matches some custom rules.
 

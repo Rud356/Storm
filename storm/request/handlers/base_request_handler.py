@@ -24,6 +24,7 @@ from storm.request.parameters import (
 )
 from storm.request.parameters.url import compile_type_to_named_group
 from .utils import parse_parameter_typehint, ParameterProperties
+from ._compiled_url_return import CompiledUrl
 
 if TYPE_CHECKING:
     from storm.app import StormApp
@@ -49,17 +50,31 @@ class StormBaseHandler(ABC):
         self.url: str = scope.path
         self.request_origin_path: str = scope.path
         self.headers: Headers = Headers()
-        for header, value in scope.headers:
-            self.headers[header.decode('utf-8')] = value.decode('utf-8')
+        for header, values_str in scope.headers:
+            self.headers[header.decode('utf-8')] = values_str.decode('utf-8')
 
         self.cookies: CustomCookie = CustomCookie()
         self.cookies.load(
             self.headers.get("Cookie", "")
         )
-        self.query_parameters: dict[str, str] = {
-            key: value for key, value in
-            parse_qs(scope.query_string).items()
-        }
+        self.query_parameters: dict[str, list[str]] = {}
+
+        if scope.query_string is not None:
+            for key, values in parse_qs(
+                scope.query_string.decode("utf-8")
+            ).items():
+                assert (
+                    isinstance(key, str) and
+                    all([isinstance(value, str)for value in values])
+                ), (
+                    "After string was decoded parse_qs must only "
+                    "return strings."
+                )
+
+                self.query_parameters[
+                    key
+                ] = [v for v in values]
+
         self.logger = handler_logger
         self._receive: receive_typehint = receive
         self._parsed_arguments: re.Match = parsed_arguments
@@ -303,13 +318,13 @@ class StormBaseHandler(ABC):
     def _compile_url_regex(
         cls: Type[StormBaseHandler],
         url: str
-    ) -> re.Pattern:
+    ) -> CompiledUrl:
         """
         Compiles url into url_regex that will be used when looking
         for a route based on found URLParameter type hints.
 
         :param cls: subclass of StormBaseHandler we are initializing.
-        :return: re.compile output after manipulations.
+        :return: re.compile output after manipulations and is url static.
         """
         parameters_names_regex = re.compile(r"<(\w+)>")
         parameters_names: set[str] = set(
@@ -361,8 +376,12 @@ class StormBaseHandler(ABC):
                 )
             )
 
+        has_url_parameters = bool(cls._url_parameters_properties)
         compiled_url_regex = re.compile(compiled_url)
-        return compiled_url_regex
+        return CompiledUrl(
+            url_pattern=compiled_url_regex,
+            is_static_url=has_url_parameters
+        )
 
     def __str__(self):
         return f"{self.__name__} on url {self.url}"

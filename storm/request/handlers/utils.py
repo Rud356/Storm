@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from inspect import isclass
 from typing import (
-    Any, Type, Optional,
+    Any, Optional,
     get_origin, get_args, Union
 )
 
@@ -26,12 +27,12 @@ def is_union_representing_optional(unions_args: tuple[Any, ...]) -> bool:
     )
 
 
-def get_original_type_from_optional(unions_args: tuple[Any, Any]) -> Any:
+def get_original_type_from_optional(*args: Any) -> Any:
     """
     Returns first value from union args that is not None.
-    :param unions_args: arguments from union.
-    :return:
+    :return: some type that is not none in union
     """
+    unions_args: tuple[type, ...] = args[:2]
     if unions_args[0] is not None:
         return unions_args[0]
 
@@ -40,7 +41,7 @@ def get_original_type_from_optional(unions_args: tuple[Any, Any]) -> Any:
 
 
 def parse_parameter_typehint(
-    request_parameter_type_hint: tuple[Any, ...]
+    request_parameter_type_hint: Any
 ) -> ParameterProperties:
     """
     Prepares ParameterProperties from some specific type hint.
@@ -54,32 +55,33 @@ def parse_parameter_typehint(
     :raises TypeError: type hint isn't representing Optional
         or Union[type, None].
     """
-    if len(request_parameter_type_hint) == 1:
-        is_optional: bool = False
-        casted_to_type: Type = request_parameter_type_hint[0]
 
-        if get_origin(casted_to_type) == Union:
-            union_args: tuple[Any, ...] = get_args(casted_to_type)
-            if not is_union_representing_optional(union_args):
-                raise TypeError(
-                    "Only Optional with specific type or Union[type, None]"
-                    " are allowed for type hint."
-                )
+    is_optional: bool = False
 
-            else:
-                is_optional = True
-                casted_to_type = get_original_type_from_optional(
-                    casted_to_type
-                )
+    if get_origin(request_parameter_type_hint) == Union:
+        union_args: tuple[Any, ...] = get_args(request_parameter_type_hint)
+        if not is_union_representing_optional(union_args):
+            raise TypeError(
+                "Only Optional with specific type or Union[type, None]"
+                " are allowed for type hint."
+            )
 
-        return ParameterProperties(
-            is_optional=is_optional,
-            casted_to_type=casted_to_type
-        )
+        else:
+            is_optional = True
+            casted_to_type = get_original_type_from_optional(
+                union_args
+            )
+
+    elif isclass(request_parameter_type_hint):
+        casted_to_type = request_parameter_type_hint
 
     else:
         raise ValueError(
-            "Request parameters subclasses can"
-            " have exactly type passed to typehint"
-            f"(got {len(request_parameter_type_hint)})"
+            "Type hints parsing expects to receive only Optional[type] or "
+            "some class, that will be instanced when casting value."
         )
+
+    return ParameterProperties(
+        is_optional=is_optional,
+        casted_to_type=casted_to_type
+    )

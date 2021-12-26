@@ -20,8 +20,8 @@ from .rule import RegexRule, MatchedHandler
 
 
 class Router:
-    ws_rules: list[RegexRule[WebSocketHandler]]
-    http_rules: list[RegexRule[HttpHandler]]
+    ws_rules: list[RegexRule[Type[WebSocketHandler]]]
+    http_rules: list[RegexRule[Type[HttpHandler]]]
 
     def __init__(self):
         self.ws_rules = []
@@ -71,28 +71,26 @@ class Router:
         else:
             raise HandlerNotFound()
 
-    def add_handler(self, handler: Type[StormBaseHandler], url: str) -> None:
+    def add_handler(self, handler_type: type, url: str) -> None:
         """
         Adds other handler inside of router.
 
-        :param handler: handlers type.
+        :param handler_type: handlers type.
         :param url: url that handler will be bound to.
         :return: nothing.
         """
-        handler_type = handler
-        rule = RegexRule(handler, url)
 
         if issubclass(handler_type, HttpHandler):
             if handler_type in self.http_rules:
                 raise NotUniqueHandlerUrl()
 
-            self.http_rules.append(rule)
+            self.http_rules.append(RegexRule(handler_type, url))
 
         elif issubclass(handler_type, WebSocketHandler):
             if handler_type in self.ws_rules:
                 raise NotUniqueHandlerUrl()
 
-            self.ws_rules.append(rule)
+            self.ws_rules.append(RegexRule(handler_type, url))
 
         else:
             raise ValueError(
@@ -106,38 +104,38 @@ class Router:
         :param another_router: instance of another router.
         :return: nothing.
         """
-        for rule in another_router.http_rules:
-            if rule.handler in self.http_rules:
-                duplicate_index = self.http_rules.index(rule)
-
+        for http_rule in another_router.http_rules:
+            if http_rule.handler in self.http_rules:
                 raise NotUniqueHandlerUrl(
-                    f"Duplicate url {rule.handler.url} has been found "
+                    f"Duplicate url {http_rule.url} has been found "
                     "in handlers:"
-                    f" {type(rule.handler).__name__} and "
-                    f"{type(self.http_rules[duplicate_index]).__name__}"
+                    f" {type(http_rule.handler).__name__}"
                 )
 
             else:
-                self.http_rules.append(rule)
+                assert issubclass(http_rule.handler, HttpHandler), (
+                    "Router.ws_rules must only contain http handler types"
+                )
+                self.http_rules.append(http_rule)
 
-        for rule in another_router.ws_rules:
-            if rule.handler in self.ws_rules:
-                duplicate_index = self.ws_rules.index(rule)
-
+        for ws_rule in another_router.ws_rules:
+            if ws_rule in self.ws_rules:
                 raise NotUniqueHandlerUrl(
-                    f"Duplicate url {rule.handler.url} has been found "
+                    f"Duplicate url {ws_rule.url} has been found "
                     "in handlers:"
-                    f" {type(rule.handler).__name__} and "
-                    f"{type(self.ws_rules[duplicate_index]).__name__}"
+                    f" {type(ws_rule.handler).__name__}"
                 )
 
             else:
-                self.ws_rules.append(rule)
+                assert issubclass(ws_rule.handler, WebSocketHandler), (
+                    "Router.ws_rules must only contain websocket handler types"
+                )
+                self.ws_rules.append(ws_rule)
 
     def order_routes(self) -> None:
         self.ws_rules.sort(
-            key=lambda v: (v.is_static is True, v.handler.url)
+            key=lambda v: (v.is_static is True, v.url)
         )
         self.http_rules.sort(
-            key=lambda v: (v.is_static is True, v.handler.url)
+            key=lambda v: (v.is_static is True, v.url)
         )

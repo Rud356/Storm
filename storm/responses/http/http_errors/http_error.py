@@ -18,16 +18,10 @@ class HttpError(Exception, BaseHttpResponse):
         response_encoder: BaseResponseEncoder = TextEncoder()
     ):
         self.status = status
-        self.headers = headers
-        self.cookies = cookies
+        self.headers = headers or Headers()
+        self.cookies = cookies or CustomCookie()
         self.message = message
         self.response_encoder = response_encoder
-
-        if self.headers is None:
-            self.headers = Headers()
-
-        if self.cookies is None:
-            self.cookies = CustomCookie()
 
     async def get_body(self) -> ResponseBody:
         if self.message is not None:
