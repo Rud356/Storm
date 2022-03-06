@@ -34,7 +34,7 @@ class ResponseStart(HttpSendEvent):
 
 
 class ResponseBody(HttpSendEvent):
-    type: str = "http.request.body"
+    type: str = "http.response.body"
     body: bytes = b""
     more_body: bool = False
 
