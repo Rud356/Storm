@@ -2,17 +2,17 @@
 Module that has a base for ASGI apps like it should be for
 ASGI protocol specs.
 """
-from typing import Protocol, runtime_checkable, Callable, Awaitable
+from abc import ABC
+from typing import Callable, Awaitable
 
 from .asgi_supported_types import ASGI_SUPPORTED_TYPES
 
 
-@runtime_checkable
-class ASGIApp(Protocol):
+class ASGIApp(ABC):
     """
     Base class for ASGI apps.
     """
-    def __call__(
+    async def __call__(
         self,
         scope: dict,
         receive: Callable[
