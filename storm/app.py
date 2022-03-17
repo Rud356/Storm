@@ -8,7 +8,7 @@ from storm.routing import Router
 from storm.types.asgi_app import ASGIApp
 from storm.types.asgi_supported_types import ASGI_SUPPORTED_TYPES
 from storm.types.scope import HTTPScope, LifespanScope, WebSocketScope
-from storm.types.events import EventDispatcher, lifespan
+from storm.types.events import EventDispatcher, lifespan, http
 from storm.loggers import events_logger
 
 
@@ -25,7 +25,6 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
         debug: bool = __debug__,
         name: str = "Storm App",
         host: str = "localhost",
-        port: int = 4608,
         config: Optional[ConfigInstance] = None,
     ):
         self.router: Router = router
@@ -33,7 +32,6 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
         self.debug: bool = debug
         self.name: str = name
         self.host: str = host
-        self.port: int = port
         self.config: Optional[ConfigInstance] = config
         self.event_dispatcher: EventDispatcher = EventDispatcher()
 
@@ -49,9 +47,9 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
             Awaitable[ASGI_SUPPORTED_TYPES]
         ]
     ) -> None:
-        await super().__call__(scope, receive, send)
         # Log received scope
         events_logger.debug(scope)
+        await super().__call__(scope, receive, send)
 
         try:
             connection_type: str = scope["type"]
@@ -62,14 +60,17 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
             ) from err
 
         if connection_type == "http":
+            events_logger.debug("Http event received")
             http_scope: HTTPScope = HTTPScope(**scope)
             await self.http_connection(http_scope, receive, send)
 
         elif connection_type == "websocket":
+            events_logger.debug("Ws event received")
             ws_scope: WebSocketScope = WebSocketScope(**scope)
             await self.ws_connection(ws_scope, receive, send)
 
         elif connection_type == "lifespan":
+            events_logger.debug("Lifespan event received")
             lifespan_scope: LifespanScope = LifespanScope(**scope)
             await self.lifespan_handling(lifespan_scope, receive, send)
 
@@ -91,6 +92,14 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
             Awaitable[ASGI_SUPPORTED_TYPES]
         ]
     ) -> None:
+        """
+        Method for handling http connections.
+
+        :param scope: connections properties.
+        :param receive: method for receiving data from connection.
+        :param send: method to respond.
+        :return: nothing.
+        """
         pass
 
     async def ws_connection(
@@ -120,10 +129,29 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
             Awaitable[ASGI_SUPPORTED_TYPES]
         ]
     ) -> None:
+        received_data: ASGI_SUPPORTED_TYPES = await receive()
+        assert isinstance(received_data, dict), (
+            "There we can only receive dicts, if server follows spec "
+            f"but got: {type(received_data)}"
+        )
+
         event: Union[
+            http.HttpRequest,
+            http.HttpDisconnect,
             lifespan.Startup,
             lifespan.Shutdown
-        ] = self.event_dispatcher.dispatch_event(await receive())
+        ] = self.event_dispatcher.dispatch_event(received_data)
+
+        if not isinstance(event, (lifespan.Startup, lifespan.Shutdown)):
+            raise RuntimeError(
+                f"This event can not be processed"
+                f"inside lifespan handler, got event type: {event.type}"
+            )
+
+        response: Union[
+            lifespan.StartupComplete, lifespan.StartupFailed,
+            lifespan.ShutdownComplete, lifespan.ShutdownFailed
+        ]
 
         if isinstance(event, lifespan.Startup):
             events_logger.info("App initialization")
@@ -133,7 +161,7 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
 
             except Exception as err:
                 events_logger.info("App failed to start", exc_info=err)
-                response: lifespan.StartupFailed = lifespan.StartupFailed(
+                response = lifespan.StartupFailed(
                     message=str(err)
                 )
                 await send(response.dict())
@@ -150,7 +178,7 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
 
             except Exception as err:
                 events_logger.info("App failed to shut down", exc_info=err)
-                response: lifespan.ShutdownFailed = lifespan.ShutdownFailed(
+                response = lifespan.ShutdownFailed(
                     message=str(err)
                 )
                 await send(response.dict())
@@ -167,7 +195,6 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
 
         :return: nothing.
         """
-        pass
 
     async def on_shutdown(self) -> None:
         """

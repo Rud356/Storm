@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, NamedTuple
 
-from pydantic import BaseModel, PositiveInt
+from pydantic import PositiveInt
 
 
-class Connection(BaseModel):
+class Connection(NamedTuple):
     host: str
     port: Optional[PositiveInt]

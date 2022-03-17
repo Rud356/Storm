@@ -33,6 +33,6 @@ class ASGIApp(ABC):
         :param send: method to send response.
         :return: nothing.
         """
-        assert scope["version"] == "3.0", (
+        assert scope["asgi"]["version"] == "3.0", (
             f'Only ASGI v3.0 supported, got ({scope["version"]})'
         )
