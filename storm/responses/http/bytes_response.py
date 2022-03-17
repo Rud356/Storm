@@ -2,7 +2,7 @@ from typing import Optional
 
 from storm.types import Headers, CustomCookie
 from .base_http_response import BaseHttpResponse
-from .response_body import ResponseBody
+from storm.types.events.http import ResponseBody
 
 
 class BytesResponse(BaseHttpResponse):

@@ -1,1 +1,1 @@
-from .router import Router
+from storm.routing.protocols.router_protocol import Router

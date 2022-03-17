@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from typing import (
-    Any, Protocol, runtime_checkable,
-    TYPE_CHECKING,
-)
+from abc import ABC
+from typing import Any, TYPE_CHECKING
 
 from storm.types import Headers, CustomCookie
 
@@ -12,8 +10,7 @@ if TYPE_CHECKING:
     from storm.types.scope.base_scope import ASGIConnectionScope
 
 
-@runtime_checkable
-class HandlerProtocol(Protocol):
+class HandlerProtocol(ABC):
     app: StormApp
     scope: ASGIConnectionScope
     request_origin_url: str
@@ -27,6 +24,13 @@ class HandlerProtocol(Protocol):
         :return: nothing.
         """
         pass
+
+    async def execute(self) -> Any:
+        """
+        Method that runs handling of request.
+
+        :return: some response.
+        """
 
     async def on_finish(self) -> None:
         """

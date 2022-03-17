@@ -4,7 +4,6 @@ from typing import Union, Optional, Iterable
 
 from storm.types import Headers, CustomCookie, SameSite
 from storm.types.events.http import ResponseStart, ResponseBody
-from .response_body import ResponseBody
 
 
 class BaseHttpResponse(ABC):
