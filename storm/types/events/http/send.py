@@ -1,6 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
-from storm.types.asgi_supported_types import ASGI_SUPPORTED_TYPES
 from storm.types.events.base_event import Event
 from storm.types.headers import Headers
 

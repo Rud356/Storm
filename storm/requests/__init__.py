@@ -1,1 +1,1 @@
-from .handler import HandlerProtocol, HttpHandler, WebSocketHandler
+from .handlers import HandlerProtocol, HttpHandler, WebSocketHandler

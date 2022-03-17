@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from storm.types.scope.base_scope import BaseScope
+from .base_scope import BaseScope
 
 
 class LifespanScope(BaseScope):

@@ -11,15 +11,15 @@ class HTTPScope(ASGIConnectionScope):
 
     @classmethod
     @validator("method", pre=True)
-    def parse_method(cls, v: str) -> str:
-        return v.upper()
+    def parse_method(cls, value: str) -> str:
+        return value.upper()
 
     @classmethod
     @validator("scheme")
-    def validate_scheme(cls, v: str) -> str:
-        if v not in {"http", "https"}:
+    def validate_scheme(cls, value: str) -> str:
+        if value not in {"http", "https"}:
             raise ValueError(
                 "Scheme for this scope must be http or https, got "
-                f" {v}"
+                f" {value}"
             )
-        return v
+        return value

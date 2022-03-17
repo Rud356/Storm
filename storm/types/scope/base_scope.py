@@ -35,14 +35,14 @@ class ASGIConnectionScope(BaseScope):
     server: Connection
 
     @validator("client", pre=True)
-    def parse_client(cls: "ASGIConnectionScope", v: Any) -> Connection: # noqa:
+    def parse_client(cls: "ASGIConnectionScope", value: Any) -> Connection: # noqa:
         # cls parameter needed from pydantic
-        return cls.parse_connection(v)
+        return cls.parse_connection(value)
 
     @validator("server", pre=True)
-    def parse_server(cls: "ASGIConnectionScope", v: Any) -> Connection: # noqa:
+    def parse_server(cls: "ASGIConnectionScope", value: Any) -> Connection: # noqa:
         # cls parameter needed from pydantic
-        return cls.parse_connection(v)
+        return cls.parse_connection(value)
 
     @classmethod
     def parse_connection(
@@ -71,9 +71,9 @@ class ASGIConnectionScope(BaseScope):
         return Connection(host=value[0], port=value[1])
 
     @validator("headers", pre=True)
-    def parse_headers(cls, v: Any) -> Headers: # noqa:
+    def parse_headers(cls, value: Any) -> Headers: # noqa:
         # cls parameter needed from pydantic
-        if not isinstance(v, list):
+        if not isinstance(value, list):
             raise ValueError("Headers must be a list")
 
-        return Headers.from_list(v)
+        return Headers.from_list(value)

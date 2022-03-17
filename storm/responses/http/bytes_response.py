@@ -1,8 +1,7 @@
 from typing import Optional
 
 from storm.types import Headers, CustomCookie
-from .base_http_response import BaseHttpResponse
-from storm.types.events.http import ResponseBody
+from .base_http_response import BaseHttpResponse, ResponseBody
 
 
 class BytesResponse(BaseHttpResponse):

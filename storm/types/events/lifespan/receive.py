@@ -1,4 +1,4 @@
-from storm.types.events import Event
+from storm.types.events.base_event import Event
 
 
 class Startup(Event):

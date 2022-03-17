@@ -1,4 +1,4 @@
-from .base_scope import BaseScope, ASGIConnectionScope
-from .http import HTTPScope
-from .lifespan import LifespanScope
-from .websocket import WebSocketScope
+from storm.types.scope.base_scope import BaseScope, ASGIConnectionScope
+from storm.types.scope.http import HTTPScope
+from storm.types.scope.lifespan import LifespanScope
+from storm.types.scope.websocket import WebSocketScope

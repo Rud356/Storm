@@ -1,8 +1,8 @@
 from typing import Protocol, runtime_checkable, Type
 
-from storm.requests.handler import HandlerProtocol
-from storm.types.scope import ASGIConnectionScope
+from storm.requests.handlers import HandlerProtocol
 from storm.routing.matched_rule import MatchedRule
+from storm.types.scope import ASGIConnectionScope
 
 
 @runtime_checkable

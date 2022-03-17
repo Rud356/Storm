@@ -15,15 +15,15 @@ class StormRouter(Router):
     def __init__(self):
         self.ws_rules = []
         self.http_rules = []
+        super().__init__()
 
     def add_rule(self, rule: Rule) -> None:
         """
-        Method that adds some rule to lists based on if it's http handler or
-        websocket handler.
-        :param rule:
-        :type rule:
-        :return:
-        :rtype:
+        Method that adds some rule to lists based on if it's http handlers or
+        websocket handlers.
+
+        :param rule: rule instance.
+        :return: nothing.
         """
         if isinstance(rule.associated_handler, HttpHandler):
             self.http_rules.append(rule)
@@ -33,7 +33,7 @@ class StormRouter(Router):
 
         else:
             raise UnknownHandlerType(
-                f"Got handler of type {type(rule.associated_handler)}"
+                f"Got handlers of type {type(rule.associated_handler)}"
             )
 
     def find_handler(self, scope: ASGIConnectionScope) -> MatchedRule:
@@ -44,7 +44,7 @@ class StormRouter(Router):
             )
             return self.find_http_handler(scope)
 
-        elif scope.type == "ws":
+        if scope.type == "ws":
             assert isinstance(scope, WebSocketScope), (
                 "Types doesn't match what been passed here "
                 "(must be WebSocketScope)"
@@ -55,7 +55,7 @@ class StormRouter(Router):
         else:
             raise UnknownScopeType(
                 f"Got connection of type {scope.type}, "
-                f"which doesn't have handler"
+                f"which doesn't have handlers"
             )
 
     def find_http_handler(
@@ -63,10 +63,11 @@ class StormRouter(Router):
         scope: HTTPScope
     ) -> MatchedRule:
         """
-        Looks for http handler that are known for router.
+        Looks for http handlers that are known for router.
+
         :param scope: instance of scope.
         :return: MatchedHandler instance.
-        :raises HandlerNotFound: if didn't found any handler inside of
+        :raises HandlerNotFound: if didn't found any handlers inside of
             router.
         """
         for rule in self.http_rules:
@@ -84,10 +85,11 @@ class StormRouter(Router):
         scope: WebSocketScope
     ) -> MatchedRule:
         """
-        Looks for websocket handler that are known for router.
+        Looks for websocket handlers that are known for router.
+
         :param scope: instance of scope.
         :return: MatchedHandler instance.
-        :raises HandlerNotFound: if didn't found any handler inside of
+        :raises HandlerNotFound: if didn't found any handlers inside of
             router.
         """
         for rule in self.ws_rules:

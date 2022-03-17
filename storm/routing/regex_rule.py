@@ -1,14 +1,16 @@
 import re
 from typing import Type
-from storm.requests.handler import HandlerProtocol
-from storm.routing.matched_rule import MatchedRule
-from storm.types.scope import ASGIConnectionScope
-from storm.routing.protocols import Rule
+
+from storm.requests.handlers import HandlerProtocol
 from storm.routing.exceptions import NotMatchingRule
+from storm.routing.matched_rule import MatchedRule
+from storm.routing.protocols import Rule
+from storm.types.scope import ASGIConnectionScope
 
 
 class RegexRule(Rule):
     def __init__(self, url: str, handler: Type[HandlerProtocol]):
+        super().__init__()
         self.url = url
         self.regex = re.compile(url)
         self.associated_handler = handler

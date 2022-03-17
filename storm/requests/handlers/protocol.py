@@ -23,7 +23,6 @@ class HandlerProtocol(ABC):
 
         :return: nothing.
         """
-        pass
 
     async def execute(self) -> Any:
         """
@@ -38,7 +37,6 @@ class HandlerProtocol(ABC):
 
         :return: nothing.
         """
-        pass
 
     async def on_unexpected_error(self, exception: Exception) -> Any:
         """
@@ -47,4 +45,3 @@ class HandlerProtocol(ABC):
 
         :return: some response.
         """
-        pass

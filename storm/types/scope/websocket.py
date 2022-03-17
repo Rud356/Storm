@@ -13,10 +13,10 @@ class WebSocketScope(ASGIConnectionScope):
 
     @classmethod
     @validator("scheme")
-    def validate_scheme(cls, v: str) -> str:
-        if v not in {"ws", "wss"}:
+    def validate_scheme(cls, value: str) -> str:
+        if value not in {"ws", "wss"}:
             raise ValueError(
                 "Scheme for this scope must be ws or wss, got "
-                f" {v}"
+                f" {value}"
             )
-        return v
+        return value

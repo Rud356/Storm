@@ -12,7 +12,8 @@ class Router(Protocol):
         router and returns MatcherRule instance.
 
         :param scope: connection parameters from request.
-        :return: instance of Matched rule, containing handler class and
+        :return: instance of Matched rule, containing handlers class and
             parsed arguments from url as dict.
+        :raises HandlerNotFound: if there's no matching route for passed scope.
         """
         pass

@@ -1,9 +1,6 @@
 from enum import Enum
 
 
-from enum import Enum
-
-
 class SameSite(Enum):
     """
     Used to store possible values of samesite cookie

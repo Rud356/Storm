@@ -1,4 +1,4 @@
-from storm.requests.handler import HandlerProtocol
+from .protocol import HandlerProtocol
 
 
 class WebSocketHandler(HandlerProtocol):

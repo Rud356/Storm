@@ -1,16 +1,17 @@
 from concurrent.futures import ThreadPoolExecutor, Executor
 from typing import (
     Awaitable, Callable, Generic,
-    Mapping, Optional, TypeVar, Union
+    Mapping, Optional, TypeVar,
+    Union, Type
 )
 
-from storm.routing import Router
+from storm.loggers import events_logger
+from storm.routing.protocols import Router
 from storm.types.asgi_app import ASGIApp
 from storm.types.asgi_supported_types import ASGI_SUPPORTED_TYPES
+from storm.types.events import lifespan, http
+from storm.types.events.dispatcher import EventDispatcher
 from storm.types.scope import HTTPScope, LifespanScope, WebSocketScope
-from storm.types.events import EventDispatcher, lifespan, http
-from storm.loggers import events_logger
-
 
 ConfigInstance = TypeVar("ConfigInstance", bound=Mapping)
 
@@ -100,7 +101,6 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
         :param send: method to respond.
         :return: nothing.
         """
-        pass
 
     async def ws_connection(
         self,
@@ -202,4 +202,3 @@ class StormApp(ASGIApp, Generic[ConfigInstance]):
 
         :return: nothing.
         """
-        pass
