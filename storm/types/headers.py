@@ -37,7 +37,7 @@ class Headers(dict):
             self[lowered_key].append(value)
 
         else:
-            super().__setattr__(lowered_key, [value])
+            super().__setitem__(lowered_key, [value])
 
     def __getitem__(self, item: str) -> list[str]:
         return super().__getitem__(item.lower())

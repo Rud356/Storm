@@ -20,4 +20,4 @@ app = ExampleApp(MockRouter())
 
 
 if __name__ == "__main__":
-    uvicorn.run("examples.simple_app:app", debug=True)
+    uvicorn.run("simple_app:app", debug=True)

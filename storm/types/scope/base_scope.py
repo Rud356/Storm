@@ -1,4 +1,4 @@
-from typing import Optional, Iterable, Any
+from typing import Optional, Any
 
 from pydantic import BaseModel, Field, validator
 
@@ -34,14 +34,14 @@ class ASGIConnectionScope(BaseScope):
     client: Connection
     server: Connection
 
-    @classmethod
     @validator("client", pre=True)
-    def parse_client(cls, v: Any) -> Connection:
+    def parse_client(cls: "ASGIConnectionScope", v: Any) -> Connection: # noqa:
+        # cls parameter needed from pydantic
         return cls.parse_connection(v)
 
-    @classmethod
     @validator("server", pre=True)
-    def parse_server(cls, v: Any) -> Connection:
+    def parse_server(cls: "ASGIConnectionScope", v: Any) -> Connection: # noqa:
+        # cls parameter needed from pydantic
         return cls.parse_connection(v)
 
     @classmethod
@@ -70,9 +70,9 @@ class ASGIConnectionScope(BaseScope):
 
         return Connection(host=value[0], port=value[1])
 
-    @classmethod
     @validator("headers", pre=True)
-    def parse_headers(cls, v: Any) -> Headers:
+    def parse_headers(cls, v: Any) -> Headers: # noqa:
+        # cls parameter needed from pydantic
         if not isinstance(v, list):
             raise ValueError("Headers must be a list")
 
