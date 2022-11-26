@@ -1,11 +1,10 @@
-from typing import Iterable
-
 from string import printable
+from typing import Any, Iterable, Union, Optional
 
 
 class Headers(dict):
     @staticmethod
-    def is_string_printable(string: str) -> bool:
+    def _is_string_printable(string: str) -> bool:
         """
         Checks if characters in string are ascii printable characters.
 
@@ -22,16 +21,18 @@ class Headers(dict):
         :param value: value of header.
         :return: nothing.
 
-        :raises AssertionError: raised when key or value contain
-        some unprintable characters. Works only when run without -O flag.
+        :raises ValueError: raised when key or value contain
+        some unprintable characters.
         """
-        assert (
-            self.is_string_printable(key) and
-            self.is_string_printable(value)
-        ), (
-            "Headers key or value containing not printable characters"
-            " (headers must only contain ascii chars that are printable)."
-        )
+        if not (
+            self._is_string_printable(key) and
+            self._is_string_printable(value)
+        ):
+            raise ValueError(
+                "Headers key or value containing not printable characters"
+                " (headers must only contain ascii chars that are printable)."
+            )
+
         lowered_key = key.lower()
         if lowered_key in self.keys():
             self[lowered_key].append(value)
@@ -40,7 +41,31 @@ class Headers(dict):
             super().__setitem__(lowered_key, [value])
 
     def __getitem__(self, item: str) -> list[str]:
-        return super().__getitem__(item.lower())
+        header_value: list[str] = super().__getitem__(item.lower())
+        return header_value
+
+    def get(
+        self, key: str, default: Optional[Any] = None
+    ) -> Optional[Union[list[str], str, Any]]:
+        """
+        Gets header values, and in case there's just one header with that name
+        gives just the string, not list of strings with one element.
+
+        :param key: header case-insensitive name.
+        :param default: allows to set default value to return in case there's no header with
+        that name.
+        :return: nothing if header isn't found, header single value or list
+        of values, if header has multiple values for this header name.
+        """
+        header_value: Optional[Union[list[str], str]] = super().get(
+            key.lower(), default
+        )
+
+        if isinstance(header_value, list) and len(header_value) == 1:
+            # If we got just 1 header - why bother unpacking the list in code?
+            header_value = header_value[0]
+
+        return header_value
 
     def to_list(self) -> list[Iterable[bytes]]:
         """

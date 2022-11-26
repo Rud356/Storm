@@ -1,7 +1,6 @@
 import uvicorn
 
 import storm
-from storm.routing import Router
 
 
 class ExampleApp(storm.StormApp):
@@ -12,7 +11,7 @@ class ExampleApp(storm.StormApp):
         print("Goodbye")
 
 
-class MockRouter(Router):
+class MockRouter(storm.StormRouter):
     pass
 
 

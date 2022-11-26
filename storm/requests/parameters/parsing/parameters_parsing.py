@@ -53,16 +53,15 @@ def parameter_information_from_typehint(
     type_hint: Any
 ) -> ParamSpecs:
     """
-    This function helps parsing any parameters information based on type hints
+    This function helps to parse any parameters information based on type hints,
     and it can be used to create url parameters easily, because to what type
-    something needs to be casted is figured out.
-
+    something needs to be cast is figured out.
     :param parameter_name: name of parameter.
     :param type_hint: the associated type hint.
     :return: ParamSpecs instance that has info about type hint.
     :raises TypeError: if supplied type hint is Union that doesn't represent
         Optional.
-    :raises ValueError: if type hint is of Optional type, but inside of it
+    :raises ValueError: if type hint is of Optional type, but inside it
         Parameter[type] is not present.
     """
     is_optional: bool = False
@@ -91,8 +90,11 @@ def parameter_information_from_typehint(
                 "Type hint must contain at least 1 not None value "
                 "to be considered parameter of handler."
             )
-        resulting_type = parse_parameter_type_hint(not_none_arguments[0])
+        resulting_type: type = parse_parameter_type_hint(
+            not_none_arguments[0]
+        )
 
+    # TODO: assert that isn't union for mypy
     elif issubclass(get_origin(resulting_type), Parameter):
         # Here is just straightforward parsing of parameter.
         resulting_type = parse_parameter_type_hint(resulting_type)

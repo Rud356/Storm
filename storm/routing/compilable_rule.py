@@ -23,8 +23,8 @@ class CompilableRule(RegexRule):
     """
     def __init__(self, url: str, handler: Type[HandlerProtocol]):
         super().__init__(url, handler)
-        self.regex = self.compile_regex_from_handler()
+        self.regex = self.compile_regex_for_handler()
 
-    def compile_regex_from_handler(self) -> re.Pattern:
+    def compile_regex_for_handler(self) -> re.Pattern:
         # TODO: add way to compile regex from handlers information
         pass

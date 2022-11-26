@@ -43,5 +43,6 @@ class HandlerProtocol(ABC):
         Method that is called when caught uncaught exception, so you can
         log error and give some response at least.
 
+        :param exception: unexpected exception during execution.
         :return: some response.
         """

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class Event(BaseModel, ABC):
     """
-    Any event in in ASGI is having this structure.
+    Any event in ASGI is having this structure.
     """
     type: str
 

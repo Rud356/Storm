@@ -23,3 +23,4 @@ class HTTPScope(ASGIConnectionScope):
                 f" {value}"
             )
         return value
+
